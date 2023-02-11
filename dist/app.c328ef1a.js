@@ -137,13 +137,14 @@ function newsFeed() {
   // 메인 페이지
   var NEWSFEED = getData(NEWS_URL);
   var NEWSLIST = [];
-  NEWSLIST.push('<ul>');
+  var template = "\n        <div class=\"container mx-auto p-4\">\n            <h1>HACKER NEWS</h1>\n            <ul>\n                {{__news_feed__}}\n            </ul>\n            <div>\n                <a href=\"#\">{{__prev_page__}}</a>\n                <a href=\"#\">{{__next_page__}}</a>\n            </div>\n        </div>\n    ";
   for (var i = (STORE.currentPage - 1) * 10; i < STORE.currentPage * 10; i++) {
     NEWSLIST.push("\n        <li>\n            <a href=\"#/show/".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    "));
   }
-  NEWSLIST.push('</ul>');
-  NEWSLIST.push("\n        <div>\n            <a href=\"#/page/".concat(STORE.currentPage > 1 ? STORE.currentPage - 1 : 1, "\">\uC774\uC804 \uD398\uC774\uC9C0</a>\n            <a href=\"#/page/").concat(STORE.currentPage + 1, "\">\uB2E4\uC74C \uD398\uC774\uC9C0</a>\n        </div>    \n    "));
-  CONTAINER.innerHTML = NEWSLIST.join('');
+  template = template.replace('{{__news_feed__}}', NEWSLIST.join(''));
+  template = template.replace('{{__prev_page__}}', STORE.currentPage > 1 ? STORE.currentPage - 1 : 1);
+  template = template.replace('{{__next_page__}}', STORE.currentPage + 1);
+  CONTAINER.innerHTML = template;
 }
 function newsDetail() {
   var id = location.hash.substring(7); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
@@ -191,7 +192,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61216" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61431" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
