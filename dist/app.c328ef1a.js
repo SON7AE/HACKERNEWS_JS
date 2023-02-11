@@ -125,39 +125,55 @@ var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 // 실제 사용자가 타이틀을 클릭했을 때, CONTENTS_URL을 가지고 AJAX 호출을 하여 데이터를 가져오자.
 // 이벤트 시스템은 브라우저가 제공한다.
 var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
-var STORE = {
-  currentPage: 1
+var store = {
+  currentPage: 1,
+  feeds: []
 };
 function getData(url) {
   AJAX.open('GET', url, false); // false : 동기적으로 처리하겠다는 옵션
   AJAX.send();
   return JSON.parse(AJAX.response);
 }
+function makeFeeds(feeds) {
+  for (var i = 0; i < feeds.length; i++) {
+    feeds[i].read = false;
+  }
+  return feeds;
+}
 function newsFeed() {
   // 메인 페이지
-  var NEWSFEED = getData(NEWS_URL);
+  var newsFeed = store.feeds;
   var NEWSLIST = [];
   var template = "\n        <div class=\"bg-gray-600 min-h-screen\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\"> \n                            <h1 class=\"font-extrabold\">HACKER NEWS</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/{{__prev_page__}}\" class=\"text-gray-500\">\n                                Previous\n                            </a>\n                            <a href=\"#/page/{{__next_page__}}\" class=\"text-gray-500 ml-4\">\n                                Next\n                            </a>\n                        </div>    \n                    </div>\n                </div>\n            </div>            \n            <div class=\"p-4 text-2xl text-gray-700\">\n                {{__news_feed__}}\n            </div>\n        </div>\n    ";
-  for (var i = (STORE.currentPage - 1) * 10; i < STORE.currentPage * 10; i++) {
-    NEWSLIST.push("\n            <div class=\"p-6 bg-white mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n                <div class=\"flex\">\n                    <div class=\"flex-auto\">\n                        <a href=\"#/show/".concat(NEWSFEED[i].id, "\">\n                            ").concat(NEWSFEED[i].title, "\n                        </a>\n                    </div>\n                    <div class=\"text-center text-sm\">\n                        <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">\n                            (").concat(NEWSFEED[i].comments_count, ")\n                        </div>\n                    </div>\n                </div>\n                <div class=\"flex mt-3\">\n                    <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                        <div>\n                            <i class=\"fas fa-user mr-1\"></i>").concat(NEWSFEED[i].user, "\n                        </div>\n                        <div>\n                            <i class=\"fas fa-heart mr-1\"></i>").concat(NEWSFEED[i].points, "\n                        </div>    \n                        <div>\n                            <i class=\"fas fa-clock mr-1\"></i>").concat(NEWSFEED[i].time_ago, "\n                        </div>        \n                    </div>\n                </div>\n            </div>\n        "));
+  if (newsFeed.length === 0) {
+    newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
+  }
+  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+    NEWSLIST.push("\n            <div class=\"p-6 ".concat(newsFeed[i].read ? 'bg-red-200' : 'bg-white', " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n                <div class=\"flex\">\n                    <div class=\"flex-auto\">\n                        <a href=\"#/show/").concat(newsFeed[i].id, "\">\n                            ").concat(newsFeed[i].title, "\n                        </a>\n                    </div>\n                    <div class=\"text-center text-sm\">\n                        <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">\n                            (").concat(newsFeed[i].comments_count, ")\n                        </div>\n                    </div>\n                </div>\n                <div class=\"flex mt-3\">\n                    <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                        <div>\n                            <i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "\n                        </div>\n                        <div>\n                            <i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "\n                        </div>    \n                        <div>\n                            <i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "\n                        </div>        \n                    </div>\n                </div>\n            </div>\n        "));
   }
   template = template.replace('{{__news_feed__}}', NEWSLIST.join(''));
-  template = template.replace('{{__prev_page__}}', STORE.currentPage > 1 ? STORE.currentPage - 1 : 1);
-  template = template.replace('{{__next_page__}}', STORE.currentPage + 1);
+  template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
+  template = template.replace('{{__next_page__}}', store.currentPage + 1);
   CONTAINER.innerHTML = template;
 }
 function newsDetail() {
   var id = location.hash.substring(7); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
   var NEWSCONTENT = getData(CONTENT_URL.replace('@id', id));
-  var template = "\n        <div class=\"bg-gray-600 min-h-screen pb-8\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold\">\n                                HACKER NEWS\n                            </h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/".concat(STORE.currentPage, "\" class=\"text-gray-500\">\n                                <i class=\"fa fa-times\"></i>\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n                <h2>\n                    ").concat(NEWSCONTENT.title, "\n                </h2>\n                <div class=\"text-gray-400 h-20\">\n                    ").concat(NEWSCONTENT.content, "\n                </div>\n                {{__comments__}}\n            </div>\n        </div>\n    ");
+  var template = "\n        <div class=\"bg-gray-600 min-h-screen pb-8\">\n            <div class=\"bg-white text-xl\">\n                <div class=\"mx-auto px-4\">\n                    <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                            <h1 class=\"font-extrabold\">\n                                HACKER NEWS\n                            </h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                            <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                                <i class=\"fa fa-times\"></i>\n                            </a>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n                <h2>\n                    ").concat(NEWSCONTENT.title, "\n                </h2>\n                <div class=\"text-gray-400 h-20\">\n                    ").concat(NEWSCONTENT.content, "\n                </div>\n                {{__comments__}}\n            </div>\n        </div>\n    ");
+  for (var i = 0; i < store.feeds.length; i++) {
+    if (store.feeds[i].id === Number(id)) {
+      store.feeds[i].read = true;
+      break;
+    }
+  }
   function makeComment(comments) {
     var called = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     var commentString = [];
-    for (var i = 0; i < comments.length; i++) {
-      commentString.push("\n                <div style=\"padding-left: ".concat(called * 40, "px\" class=\"mt-4\">\n                    <div class=\"text-gray-400\">\n                        <i class=\"fa fa-sort-up mr-2\"></i>\n                        <strong>").concat(comments[i].user, "</strong> ").concat(comments[i].time_ago, "\n                    </div>\n                    <p class=\"text-gray-700\">\n                        ").concat(comments[i].content, "\n                    </p>\n                </div>\n            "));
+    for (var _i = 0; _i < comments.length; _i++) {
+      commentString.push("\n                <div style=\"padding-left: ".concat(called * 40, "px\" class=\"mt-4\">\n                    <div class=\"text-gray-400\">\n                        <i class=\"fa fa-sort-up mr-2\"></i>\n                        <strong>").concat(comments[_i].user, "</strong> ").concat(comments[_i].time_ago, "\n                    </div>\n                    <p class=\"text-gray-700\">\n                        ").concat(comments[_i].content, "\n                    </p>\n                </div>\n            "));
       // 재귀 호출
-      if (comments[i].comments.length > 0) {
-        commentString.push(makeComment(comments[i].comments, called + 1));
+      if (comments[_i].comments.length > 0) {
+        commentString.push(makeComment(comments[_i].comments, called + 1));
       }
     }
     return commentString.join('');
@@ -172,7 +188,7 @@ function router() {
   if (routePath === '') {
     newsFeed();
   } else if (routePath.indexOf('#/page/') >= 0) {
-    STORE.currentPage = Number(routePath.substring(7));
+    store.currentPage = Number(routePath.substring(7));
     newsFeed();
   } else {
     newsDetail();
