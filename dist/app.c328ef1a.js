@@ -125,30 +125,19 @@ var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 // 실제 사용자가 타이틀을 클릭했을 때, CONTENTS_URL을 가지고 AJAX 호출을 하여 데이터를 가져오자.
 // 이벤트 시스템은 브라우저가 제공한다.
 var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
-AJAX.open('GET', NEWS_URL, false); // false : 동기적으로 처리하겠다는 옵션
-AJAX.send();
-
-// 네트워크를 통해서 가져온 데이터를 어떻게 다룰 것인가? 이 질문을 고민해보자.
-var NEWSFEED = JSON.parse(AJAX.response);
-
-// 아래 코드로 작성하면 UI가 li 목록 하나만 보일 것이다.
-// 그 이유는 for문은 10번 다 돌았는데 ul, li 태그 하나만 하위에다가 넣기 때문이다.
-// 즉 오버라이팅이 되기 때문이다.
-
-// for (let i = 0; i < 10; i++) {
-//     document.getElementById('root').innerHTML = `<ul>
-//     <li>${NEWSFEED[i].title}</li>
-// </ul>`
-// }
-
+function getData(url) {
+  AJAX.open('GET', url, false); // false : 동기적으로 처리하겠다는 옵션
+  AJAX.send();
+  return JSON.parse(AJAX.response);
+}
+var NEWSFEED = getData(NEWS_URL);
 var ul = document.createElement('ul');
 
 // 상세 페이지
 window.addEventListener('hashchange', function () {
   var id = this.location.hash.substring(1); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
-  AJAX.open('GET', CONTENT_URL.replace('@id', id), false);
-  AJAX.send();
-  var NEWSCONTENT = JSON.parse(AJAX.response);
+
+  var NEWSCONTENT = getData(CONTENT_URL.replace('@id', id));
   var title = document.createElement('h1');
   title.innerHTML = NEWSCONTENT.title;
   CONTENT.appendChild(title);
@@ -156,18 +145,14 @@ window.addEventListener('hashchange', function () {
 
 // 메인 페이지
 for (var i = 0; i < 10; i++) {
-  var li = document.createElement('li');
-  var a = document.createElement('a');
-  a.href = "#".concat(NEWSFEED[i].id);
-  a.innerHTML = "".concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ")");
-  a.addEventListener('click', function () {});
-  ul.appendChild(li);
-  li.appendChild(a);
+  var div = document.createElement('div');
+  div.innerHTML = "\n        <li>\n            <a href=\"#".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " ").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    ");
+  ul.appendChild(div.firstElementChild);
 }
 
 // appendChild - 자식을 추가한다 라는 의미로 받아들이자.
-document.getElementById('root').appendChild(ul); // 메인 페이지
-document.getElementById('root').appendChild(CONTENT); // 상세 페이지
+CONTAINER.appendChild(ul); // 메인 페이지
+CONTAINER.appendChild(CONTENT); // 상세 페이지
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
