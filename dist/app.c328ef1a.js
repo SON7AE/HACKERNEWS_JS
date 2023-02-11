@@ -125,6 +125,9 @@ var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
 // 실제 사용자가 타이틀을 클릭했을 때, CONTENTS_URL을 가지고 AJAX 호출을 하여 데이터를 가져오자.
 // 이벤트 시스템은 브라우저가 제공한다.
 var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
+var STORE = {
+  currentPage: 1
+};
 function getData(url) {
   AJAX.open('GET', url, false); // false : 동기적으로 처리하겠다는 옵션
   AJAX.send();
@@ -135,16 +138,17 @@ function newsFeed() {
   var NEWSFEED = getData(NEWS_URL);
   var NEWSLIST = [];
   NEWSLIST.push('<ul>');
-  for (var i = 0; i < 10; i++) {
-    NEWSLIST.push("\n        <li>\n            <a href=\"#".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    "));
+  for (var i = (STORE.currentPage - 1) * 10; i < STORE.currentPage * 10; i++) {
+    NEWSLIST.push("\n        <li>\n            <a href=\"#/show/".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    "));
   }
   NEWSLIST.push('</ul>');
+  NEWSLIST.push("\n        <div>\n            <a href=\"#/page/".concat(STORE.currentPage > 1 ? STORE.currentPage - 1 : 1, "\">\uC774\uC804 \uD398\uC774\uC9C0</a>\n            <a href=\"#/page/").concat(STORE.currentPage + 1, "\">\uB2E4\uC74C \uD398\uC774\uC9C0</a>\n        </div>    \n    "));
   CONTAINER.innerHTML = NEWSLIST.join('');
 }
 function newsDetail() {
-  var id = location.hash.substring(1); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
+  var id = location.hash.substring(7); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
   var NEWSCONTENT = getData(CONTENT_URL.replace('@id', id));
-  CONTAINER.innerHTML = "\n        <h1>".concat(NEWSCONTENT.title, "</h1>\n\n        <div>\n            <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n        </div>    \n    ");
+  CONTAINER.innerHTML = "\n        <h1>".concat(NEWSCONTENT.title, "</h1>\n\n        <div>\n            <a href=\"#/page/").concat(STORE.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n        </div>    \n    ");
 }
 function router() {
   var routePath = location.hash;
@@ -153,12 +157,13 @@ function router() {
   // 따라서 true를 반환한다.
   if (routePath === '') {
     newsFeed();
+  } else if (routePath.indexOf('#/page/') >= 0) {
+    STORE.currentPage = Number(routePath.substring(7));
+    newsFeed();
   } else {
     newsDetail();
   }
 }
-
-// 상세 페이지
 window.addEventListener('hashchange', router);
 router();
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -186,7 +191,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60896" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61216" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
