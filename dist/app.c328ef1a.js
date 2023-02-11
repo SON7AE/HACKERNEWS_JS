@@ -119,7 +119,12 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   return newRequire;
 })({"app.js":[function(require,module,exports) {
 var AJAX = new XMLHttpRequest();
+var CONTAINER = document.getElementById('root');
+var CONTENT = document.createElement('div');
 var NEWS_URL = 'https://api.hnpwa.com/v0/news/1.json';
+// 실제 사용자가 타이틀을 클릭했을 때, CONTENTS_URL을 가지고 AJAX 호출을 하여 데이터를 가져오자.
+// 이벤트 시스템은 브라우저가 제공한다.
+var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 AJAX.open('GET', NEWS_URL, false); // false : 동기적으로 처리하겠다는 옵션
 AJAX.send();
 
@@ -137,14 +142,32 @@ var NEWSFEED = JSON.parse(AJAX.response);
 // }
 
 var ul = document.createElement('ul');
+
+// 상세 페이지
+window.addEventListener('hashchange', function () {
+  var id = this.location.hash.substring(1); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
+  AJAX.open('GET', CONTENT_URL.replace('@id', id), false);
+  AJAX.send();
+  var NEWSCONTENT = JSON.parse(AJAX.response);
+  var title = document.createElement('h1');
+  title.innerHTML = NEWSCONTENT.title;
+  CONTENT.appendChild(title);
+});
+
+// 메인 페이지
 for (var i = 0; i < 10; i++) {
   var li = document.createElement('li');
-  li.innerHTML = NEWSFEED[i].title;
+  var a = document.createElement('a');
+  a.href = "#".concat(NEWSFEED[i].id);
+  a.innerHTML = "".concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ")");
+  a.addEventListener('click', function () {});
   ul.appendChild(li);
+  li.appendChild(a);
 }
 
 // appendChild - 자식을 추가한다 라는 의미로 받아들이자.
-document.getElementById('root').appendChild(ul);
+document.getElementById('root').appendChild(ul); // 메인 페이지
+document.getElementById('root').appendChild(CONTENT); // 상세 페이지
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
