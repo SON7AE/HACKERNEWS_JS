@@ -130,29 +130,37 @@ function getData(url) {
   AJAX.send();
   return JSON.parse(AJAX.response);
 }
-var NEWSFEED = getData(NEWS_URL);
-var ul = document.createElement('ul');
-
-// 상세 페이지
-window.addEventListener('hashchange', function () {
-  var id = this.location.hash.substring(1); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
-
+function newsFeed() {
+  // 메인 페이지
+  var NEWSFEED = getData(NEWS_URL);
+  var NEWSLIST = [];
+  NEWSLIST.push('<ul>');
+  for (var i = 0; i < 10; i++) {
+    NEWSLIST.push("\n        <li>\n            <a href=\"#".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " (").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    "));
+  }
+  NEWSLIST.push('</ul>');
+  CONTAINER.innerHTML = NEWSLIST.join('');
+}
+function newsDetail() {
+  var id = location.hash.substring(1); // 내가 쓰고 싶은 위치 값을 지정해주면 된다. 그 이후의 나머지 문자열들만 반환한다.
   var NEWSCONTENT = getData(CONTENT_URL.replace('@id', id));
-  var title = document.createElement('h1');
-  title.innerHTML = NEWSCONTENT.title;
-  CONTENT.appendChild(title);
-});
+  CONTAINER.innerHTML = "\n        <h1>".concat(NEWSCONTENT.title, "</h1>\n\n        <div>\n            <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n        </div>    \n    ");
+}
+function router() {
+  var routePath = location.hash;
 
-// 메인 페이지
-for (var i = 0; i < 10; i++) {
-  var div = document.createElement('div');
-  div.innerHTML = "\n        <li>\n            <a href=\"#".concat(NEWSFEED[i].id, "\">\n                ").concat(NEWSFEED[i].title, " ").concat(NEWSFEED[i].comments_count, ") \n            </a> \n        </li>\n    ");
-  ul.appendChild(div.firstElementChild);
+  // location.hash가 #만 있을 경우에는 빈 값을 반환한다.
+  // 따라서 true를 반환한다.
+  if (routePath === '') {
+    newsFeed();
+  } else {
+    newsDetail();
+  }
 }
 
-// appendChild - 자식을 추가한다 라는 의미로 받아들이자.
-CONTAINER.appendChild(ul); // 메인 페이지
-CONTAINER.appendChild(CONTENT); // 상세 페이지
+// 상세 페이지
+window.addEventListener('hashchange', router);
+router();
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -178,7 +186,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50253" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60896" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
